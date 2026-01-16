@@ -1,0 +1,1724 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+  <head>
+    <meta charset="UTF-8" />
+    <meta name="viewport" content="width=device-width, initial-scale=1" />
+    <title>Etheria Poker</title>
+    <style>
+      :root {
+        --bg: #0f1b1f;
+        --panel: #17282e;
+        --accent: #3ddc97;
+        --text: #e6f1f5;
+        --muted: #9bb2ba;
+        --danger: #ff6b6b;
+        --gold: #ffd166;
+        --chip: #3b82f6;
+      }
+      * {
+        box-sizing: border-box;
+      }
+      body {
+        margin: 0;
+        background: var(--bg);
+        color: var(--text);
+        font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", Roboto,
+          "Helvetica Neue", Arial, "Noto Sans", "PingFang SC", sans-serif;
+        display: flex;
+        justify-content: center;
+        min-height: 100vh;
+      }
+      .start-screen {
+        position: fixed;
+        inset: 0;
+        z-index: 999;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: #0b1115;
+      }
+      .start-screen.hidden {
+        display: none;
+      }
+      .start-bg {
+        position: absolute;
+        inset: 0;
+        background: url("https://news.seagm.com/wp-content/uploads/2025/08/Etheria-Restart-Logo.webp")
+          center/contain no-repeat;
+        opacity: 0.25;
+      }
+      .start-content {
+        position: relative;
+        z-index: 1;
+        text-align: center;
+        padding: 24px;
+      }
+      .start-title {
+        font-size: 32px;
+        font-weight: 700;
+        margin-bottom: 16px;
+        letter-spacing: 0.5px;
+      }
+      .start-btn {
+        background: var(--gold);
+        color: #1b1605;
+        font-size: 18px;
+        padding: 12px 24px;
+        border-radius: 12px;
+      }
+      .app {
+        width: min(960px, 100%);
+        padding: 16px;
+        display: flex;
+        flex-direction: column;
+        gap: 12px;
+      }
+      header {
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        gap: 12px;
+      }
+      .header-actions {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+      }
+      h1 {
+        font-size: 20px;
+        margin: 0;
+      }
+      .status {
+        font-size: 13px;
+        color: var(--muted);
+      }
+      .table {
+        background: radial-gradient(circle at top, #1f3640, #0e1a1d);
+        border-radius: 16px;
+        padding: 16px;
+        position: relative;
+        min-height: 420px;
+        padding-bottom: 72px;
+      }
+      .table-center {
+        position: absolute;
+        inset: 40% auto auto 50%;
+        transform: translate(-50%, -50%);
+        display: grid;
+        gap: 8px;
+        justify-items: center;
+        z-index: 1;
+      }
+      .pot {
+        position: absolute;
+        top: 12px;
+        left: 12px;
+      }
+      .community {
+        display: flex;
+        justify-content: center;
+        gap: 8px;
+        flex-wrap: wrap;
+      }
+      .seat {
+        position: absolute;
+        width: min(240px, 45%);
+        z-index: 3;
+      }
+      .seat-north {
+        top: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .seat-south {
+        bottom: 12px;
+        left: 50%;
+        transform: translateX(-50%);
+      }
+      .seat-west {
+        left: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      .seat-east {
+        right: 12px;
+        top: 50%;
+        transform: translateY(-50%);
+      }
+      .card {
+        width: 52px;
+        height: 72px;
+        border-radius: 8px;
+        background: #ffffff;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        border: 1px solid #e2e8f0;
+        overflow: hidden;
+        position: relative;
+        padding: 6px;
+      }
+      .card.back-card {
+        padding: 0;
+        border: none;
+        background: transparent;
+      }
+      .card.back-card img {
+        width: 100%;
+        height: 100%;
+        object-fit: cover;
+      }
+      .card img {
+        width: 82%;
+        height: 82%;
+        object-fit: contain;
+      }
+      .card .card-art {
+        filter: saturate(1.05);
+      }
+      .card .card-label {
+        position: absolute;
+        font-weight: 700;
+        font-size: 12px;
+        text-shadow: none;
+        background: rgba(255, 255, 255, 0.8);
+        padding: 1px 4px;
+        border-radius: 6px;
+      }
+      .card-label.suit-red {
+        color: #dc2626;
+      }
+      .card-label.suit-black {
+        color: #111827;
+      }
+      .card .card-label.top {
+        top: 4px;
+        left: 4px;
+      }
+      .card .card-label.bottom {
+        bottom: 4px;
+        right: 4px;
+      }
+      .card.highlight {
+        border: 2px solid var(--gold);
+        box-shadow: 0 0 0 2px rgba(255, 209, 102, 0.35);
+      }
+      .card.community-card {
+        width: 64px;
+        height: 90px;
+      }
+      .card.player-card {
+        width: 58px;
+        height: 82px;
+      }
+      .card.hero-card {
+        width: 70px;
+        height: 98px;
+      }
+      .pot {
+        text-align: left;
+        font-weight: 600;
+        color: var(--gold);
+        background: rgba(12, 22, 26, 0.7);
+        padding: 4px 8px;
+        border-radius: 8px;
+        border: 1px solid #24343b;
+      }
+      .player {
+        background: var(--panel);
+        border-radius: 12px;
+        padding: 10px 12px;
+        display: grid;
+        grid-template-columns: 1fr auto;
+        gap: 8px;
+      }
+      .player.vertical {
+        grid-template-columns: 1fr;
+      }
+      .player.vertical .cards {
+        justify-content: flex-start;
+      }
+      .player-info {
+        display: flex;
+        gap: 10px;
+        align-items: center;
+        min-width: 0;
+      }
+      .player-details {
+        flex: 1;
+        min-width: 0;
+        display: grid;
+        gap: 4px;
+      }
+      .player-top {
+        display: flex;
+        align-items: center;
+        justify-content: space-between;
+        gap: 8px;
+      }
+      .avatar {
+        width: 44px;
+        height: 44px;
+        border-radius: 50%;
+        overflow: hidden;
+        background: #0c161a;
+        border: 1px solid #2b3f47;
+      }
+      .avatar img {
+        width: 100%;
+        height: 100%;
+        display: block;
+      }
+      .player .name {
+        font-weight: 600;
+        white-space: nowrap;
+        overflow: hidden;
+        text-overflow: ellipsis;
+      }
+      .player .chips {
+        color: var(--chip);
+        font-weight: 600;
+      }
+      .player .meta {
+        font-size: 12px;
+        color: var(--muted);
+        white-space: nowrap;
+      }
+      .bet-amount {
+        color: var(--gold);
+        font-weight: 700;
+      }
+      .hand-rank {
+        color: var(--gold);
+        font-weight: 700;
+      }
+      .meta-row {
+        display: flex;
+        align-items: center;
+        gap: 8px;
+        flex-wrap: nowrap;
+      }
+      .player .cards {
+        display: flex;
+        gap: 6px;
+        justify-content: flex-end;
+      }
+      .player .action {
+        font-size: 12px;
+        color: var(--accent);
+      }
+      .player.folded {
+        opacity: 0.6;
+      }
+      .player.folded .avatar img,
+      .player.folded .card {
+        filter: grayscale(1);
+        opacity: 0.6;
+      }
+      .player.winner {
+        box-shadow: 0 0 0 2px rgba(255, 209, 102, 0.7);
+        border: 1px solid var(--gold);
+      }
+      .player.active-turn {
+        box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.8);
+        border: 1px solid #3b82f6;
+      }
+      .player.active-turn .cards {
+        border: 2px solid #3b82f6;
+        border-radius: 10px;
+        padding: 4px;
+      }
+      .winner-badge {
+        color: #1b1605;
+        background: var(--gold);
+        border-radius: 6px;
+        padding: 2px 6px;
+        font-size: 12px;
+        font-weight: 700;
+      }
+      .controls {
+        background: var(--panel);
+        border-radius: 12px;
+        padding: 12px;
+        display: grid;
+        gap: 10px;
+      }
+      .controls .buttons {
+        display: grid;
+        grid-template-columns: repeat(3, minmax(0, 1fr));
+        gap: 8px;
+      }
+      .quick-raises {
+        display: grid;
+        grid-template-columns: repeat(4, minmax(0, 1fr));
+        gap: 8px;
+      }
+      button {
+        border: none;
+        border-radius: 10px;
+        padding: 10px 12px;
+        font-weight: 600;
+        background: var(--accent);
+        color: #0b1c1f;
+      }
+      button.secondary {
+        background: #334b52;
+        color: var(--text);
+      }
+      button.danger {
+        background: var(--danger);
+        color: #1b0d0d;
+      }
+      button:disabled {
+        opacity: 0.5;
+      }
+      .raise-row {
+        display: flex;
+        gap: 8px;
+        align-items: center;
+      }
+      .raise-row input {
+        width: 100%;
+        padding: 8px 10px;
+        border-radius: 8px;
+        border: 1px solid #2b3f47;
+        background: #0c161a;
+        color: var(--text);
+      }
+      .log {
+        background: #0c161a;
+        border-radius: 12px;
+        padding: 10px;
+        font-size: 12px;
+        color: var(--muted);
+        height: 140px;
+        overflow-y: auto;
+      }
+      @media (max-width: 640px) {
+        .card {
+          width: 42px;
+          height: 60px;
+          font-size: 15px;
+        }
+        .card img {
+          width: 84%;
+          height: 84%;
+        }
+        .card.community-card {
+          width: 52px;
+          height: 74px;
+        }
+        .card.player-card {
+          width: 48px;
+          height: 68px;
+        }
+        .card.hero-card {
+          width: 58px;
+          height: 82px;
+        }
+        .table {
+          min-height: 320px;
+        }
+        .seat {
+          width: min(220px, 60%);
+        }
+        .seat-west,
+        .seat-east {
+          width: min(200px, 52%);
+        }
+        .player-info {
+          grid-template-columns: 36px 1fr;
+        }
+        .avatar {
+          width: 36px;
+          height: 36px;
+        }
+        .player {
+          grid-template-columns: 1fr;
+        }
+        .player .cards {
+          justify-content: flex-start;
+        }
+        .player-info {
+          gap: 8px;
+        }
+        .player-details {
+          gap: 2px;
+        }
+        .controls .buttons {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+        .quick-raises {
+          grid-template-columns: repeat(2, minmax(0, 1fr));
+        }
+      }
+    </style>
+  </head>
+  <body>
+    <div class="start-screen" id="startScreen">
+      <div class="start-bg"></div>
+      <div class="start-content">
+        <div class="start-title">Etheria Poker</div>
+        <button id="startBtn" class="start-btn">开始游戏</button>
+      </div>
+    </div>
+    <div class="app">
+      <header>
+        <div>
+          <h1>Etheria Poker</h1>
+          <div class="status" id="statusText">准备开始</div>
+        </div>
+        <div class="header-actions">
+          <button id="soundBtn" class="secondary">声音：开</button>
+          <button id="newHandBtn" class="secondary">下一局</button>
+        </div>
+      </header>
+
+      <section class="table">
+        <div class="pot" id="potText">底池 0</div>
+        <div class="table-center">
+          <div class="community" id="communityCards"></div>
+        </div>
+        <div class="seat seat-north" id="seat-north"></div>
+        <div class="seat seat-east" id="seat-east"></div>
+        <div class="seat seat-south" id="seat-south"></div>
+        <div class="seat seat-west" id="seat-west"></div>
+      </section>
+
+      <section class="players" id="players"></section>
+
+      <section class="controls">
+        <div class="buttons">
+          <button id="foldBtn" class="danger">弃牌</button>
+          <button id="callBtn">跟注 / 过牌</button>
+          <button id="raiseBtn">加注</button>
+        </div>
+        <div class="quick-raises">
+          <button class="secondary" data-raise="10">+10</button>
+          <button class="secondary" data-raise="20">+20</button>
+          <button class="secondary" data-raise="50">+50</button>
+          <button class="secondary" data-raise="100">+100</button>
+        </div>
+        <div class="raise-row">
+          <input
+            id="raiseInput"
+            type="number"
+            min="0"
+            step="1"
+            placeholder="加注金额（总下注）"
+          />
+          <button id="allInBtn" class="secondary">全下</button>
+        </div>
+      </section>
+
+      <section class="log" id="log"></section>
+    </div>
+
+    <script>
+      const smallBlind = 5;
+      const bigBlind = 10;
+      const startingChips = 1000;
+      const npcNamePool = [
+        "Batsby",
+        "Beyontin",
+        "Borgne",
+        "Celince",
+        "DokiDoki",
+        "Fiamelia",
+        "Freya",
+        "Fuqiu",
+        "Heinrich",
+        "Helkid",
+        "Holden",
+        "Hoyan",
+        "Khloros",
+        "Kloss",
+        "Kokardi",
+        "Lian",
+        "Liliam",
+        "Lilith",
+        "Lily",
+        "Lingluo",
+      ];
+      const suitSymbols = {
+        S: "♠",
+        H: "♥",
+        D: "♦",
+        C: "♣",
+      };
+      const cardBackUrl = "https://deckofcardsapi.com/static/img/back.png";
+      const etheriaCardImages = [
+        "https://www.prydwen.gg/static/030c65f6854a682af81e76494ee7d886/b26e2/andrew-red_card.webp",
+        "https://www.prydwen.gg/static/6f9edfb06bc06ae6071a72d130a8442f/b26e2/andrew-blue_card.webp",
+        "https://www.prydwen.gg/static/4ccd3ddb97b5d465172cb5f62c7c8e1a/b26e2/asshu_card.webp",
+        "https://www.prydwen.gg/static/589318651f650f3a0b133e9ca38a7b7c/b26e2/batsby_card.webp",
+        "https://www.prydwen.gg/static/520bffefa474f9a854a74fada0dc6511/b26e2/borgne_card.webp",
+        "https://www.prydwen.gg/static/8b23da5a6334414e0970ec4080950849/b26e2/cachi_card.webp",
+        "https://www.prydwen.gg/static/4dd70a333ca2721978eff9c91ccb585a/b26e2/cachi-guard_card.webp",
+        "https://www.prydwen.gg/static/b3325eee55bea08b5bd7b12afa1a5b10/b26e2/Celince_card.webp",
+        "https://www.prydwen.gg/static/cf167f24a4d210ec66f4e9e6e8282acd/b26e2/chiaki_card.webp",
+        "https://www.prydwen.gg/static/d4b1ccff4e08fd9af22a254f07e3f597/b26e2/chiaki_echo_card.webp",
+        "https://www.prydwen.gg/static/867e397a62e00af25d6c73bc54a12efb/b26e2/dinah_card.webp",
+        "https://www.prydwen.gg/static/0eb9bcbc3be030b9768c3ccd706ee16b/b26e2/diting_card.webp",
+        "https://www.prydwen.gg/static/89ca4702e52c53f2122620c18424827a/b26e2/Dokidoki_card.webp",
+        "https://www.prydwen.gg/static/3a38ef5038c3cc7ad83f998bfa96ac06/b26e2/dorothy-wisher_card.webp",
+        "https://www.prydwen.gg/static/db5751abdb7b91ece239bf7108a04524/b26e2/fangus_card.webp",
+        "https://www.prydwen.gg/static/6cab180fe534091c59b3d423a6b7f8a2/b26e2/freya_card.webp",
+        "https://www.prydwen.gg/static/c0edf310fe6916e098fad1dce9cc7e3b/b26e2/fuqiu_card.webp",
+        "https://www.prydwen.gg/static/b3bb4ef190e0f1b0c120d55889ff015b/b26e2/gray_card.webp",
+        "https://www.prydwen.gg/static/76673c6ccd1b20a58b7f094f24b78a46/b26e2/Heinrich_card.webp",
+        "https://www.prydwen.gg/static/9169cfb44ababa5eb0b31fdb9c8a5e5e/b26e2/Helkid_card.webp",
+        "https://www.prydwen.gg/static/87e2016e0bb0c4b8098af0b7a6d40403/b26e2/hizuki_card.webp",
+        "https://www.prydwen.gg/static/8323a051af4f46e5a8a52cf23ec78242/b26e2/holden_card.webp",
+        "https://www.prydwen.gg/static/6c25f760954e9f37b4e73d987d00ae87/b26e2/Hoyan_card.webp",
+        "https://www.prydwen.gg/static/b3a0a30a495b279be8a0eb9b884c3510/b26e2/kazami_card.webp",
+        "https://www.prydwen.gg/static/c093845f1e9fc1961102370b0fc8d360/b26e2/kauzyo_card.webp",
+        "https://www.prydwen.gg/static/25624bf97101642e9feaed90bfada5e1/b26e2/Khloros_card.webp",
+        "https://www.prydwen.gg/static/ad922cc2313e246031e76bd94226b501/b26e2/Kloss_card.webp",
+        "https://www.prydwen.gg/static/acb84020a276b3250b9beaabf5529a40/b26e2/koka_card.webp",
+        "https://www.prydwen.gg/static/cc3cce293afa0e145bd3776dab5d2ea8/b26e2/kraken_card.webp",
+        "https://www.prydwen.gg/static/6ed1f375f89553a9f5b188d060421aed/b26e2/Lian_card.webp",
+        "https://www.prydwen.gg/static/4fe40f05ba40e9207e6525f32a38fe48/b26e2/liliam_card.webp",
+        "https://www.prydwen.gg/static/9c3de6a6313e4e2d14141185c6a9ff28/b26e2/Lilith_card.webp",
+        "https://www.prydwen.gg/static/d7c38772c2e6d272d920eebdab7602bd/b26e2/Lili_card.webp",
+        "https://www.prydwen.gg/static/4d14c2efc5de6b37ec968294f0ec2afc/b26e2/Lingluo_card.webp",
+        "https://www.prydwen.gg/static/ecba1678f05f2977e5c4f09b39989520/b26e2/lowan_card.webp",
+        "https://www.prydwen.gg/static/c6aa8cb24cdff80917dcde14d823b18d/b26e2/marvell_card.webp",
+        "https://www.prydwen.gg/static/c5a82af2f0cc52ec59daea3b0ee6d969/b26e2/Massiah_card.webp",
+        "https://www.prydwen.gg/static/f85b2766439676b2204fb716ed5dccf7/b26e2/Mia_card.webp",
+        "https://www.prydwen.gg/static/9397db085816d208a5996c69c497fda6/b26e2/mizu_card.webp",
+        "https://www.prydwen.gg/static/fb2eecba59fb60cfe6ef96ae2b2426b9/b26e2/nahor_card.webp",
+        "https://www.prydwen.gg/static/f53b8abd7d90c8f335cfaf913e652fdf/b26e2/nevette_card.webp",
+        "https://www.prydwen.gg/static/a863984fa53a67c125ef790aa381918f/b26e2/nell_card.webp",
+        "https://www.prydwen.gg/static/49b44e18aeba1c06c669d27e83477aac/b26e2/Ninfoniel_card.webp",
+        "https://www.prydwen.gg/static/130965076112034154b311058838ceb5/b26e2/obol_card.webp",
+        "https://www.prydwen.gg/static/024abbcccdef629a1abe2f68a20d92d6/b26e2/Oboro_card.webp",
+        "https://www.prydwen.gg/static/740f00baad961eb24bfd50f6f22cf12b/b26e2/pail_card.webp",
+        "https://www.prydwen.gg/static/99871ca6a0634ca423598573fd828623/b26e2/plume_card.webp",
+        "https://www.prydwen.gg/static/f6bc0e2c3aceb3e4e3578ccc977319cd/b26e2/Rahu_card.webp",
+        "https://www.prydwen.gg/static/86e296b6c408149a00626967893862dc/b26e2/Raymerry_card.webp",
+        "https://www.prydwen.gg/static/a556c4febd93d917c8ec904b2efc3c3d/b26e2/Rilmocha_card.webp",
+        "https://www.prydwen.gg/static/a764f9ab956040fd3abf3ecf0c925069/b26e2/rin_card.webp",
+        "https://www.prydwen.gg/static/15a58e27582cb4ad8273dee2ca0085cf/b26e2/rin-unbowed_card.webp",
+        "https://www.prydwen.gg/static/61e770b93780f35b62f9837630f7c98e/b26e2/rosa_card.webp",
+        "https://www.prydwen.gg/static/36d4c6bd73ef25b1eaff8592a66d8cde/b26e2/Sania_card.webp",
+        "https://www.prydwen.gg/static/c3770ca1e1bfb308f7efb1d501fcd89c/b26e2/Sania_withered_card.webp",
+        "https://www.prydwen.gg/static/35676d981b420cde46954219ba9a859f/b26e2/santik_card.webp",
+        "https://www.prydwen.gg/static/5d39ecc1919df96277a0d5ed797c7944/b26e2/senyu_card.webp",
+        "https://www.prydwen.gg/static/1dbe330a1d5de583e96dfc0645d8cfa8/b26e2/sybil_card.webp",
+        "https://www.prydwen.gg/static/e4a3697b675459be044a1b97a3ce313b/b26e2/sylph_card.webp",
+        "https://www.prydwen.gg/static/386bd460ce80a8466f8f24bb457739d2/b26e2/Tiamat_card.webp",
+        "https://www.prydwen.gg/static/d33881cb827f4a08f156d6ed89d0d34d/b26e2/tsukiyomi_card.webp",
+        "https://www.prydwen.gg/static/c735a7c3002267bbf62c4404d751d09d/b26e2/tsutomu_card.webp",
+        "https://www.prydwen.gg/static/572a3342105e24e2080506fcba8944fd/b26e2/turandot_card.webp",
+        "https://www.prydwen.gg/static/98049949bb20d95fd27c9a640ecb68fb/b26e2/Valerian_card.webp",
+        "https://www.prydwen.gg/static/bbb0292bf6a0c530355cb7a62777c520/b26e2/Veronica_card.webp",
+        "https://www.prydwen.gg/static/143a2178d4bd6014703dde1a8e3d14ab/b26e2/vice_card.webp",
+        "https://www.prydwen.gg/static/e49c61e1e03738864be853c689895ac2/b26e2/victor_card.webp",
+        "https://www.prydwen.gg/static/c45a48851538a833cb6d1bb9f827a1af/b26e2/viper_card.webp",
+        "https://www.prydwen.gg/static/0a6781cd1d7116e85d8c1e15ea3cf2a4/b26e2/Xiada_card.webp",
+        "https://www.prydwen.gg/static/ee8b7875a7890cb3cf50fd045df75749/b26e2/yang_card.webp",
+        "https://www.prydwen.gg/static/bd87fc6f501f53bbd5f3cfc90af2fb04/b26e2/yeli_card.webp",
+      ];
+      const avatarPool = [
+        "https://www.prydwen.gg/static/0355375412411fccd9a903c90f467321/d8057/Unique_Mermaid_Princess.webp",
+        "https://www.prydwen.gg/static/05aede46a5b321d7f6319456be3fe52e/d8057/Leg_Jackal_Guard.webp",
+        "https://www.prydwen.gg/static/0a4ef7edffe9c2367eff7453344896ad/d8057/Unique_White_Gale.webp",
+        "https://www.prydwen.gg/static/1128be227e355bd44d8f073a149b6ddb/d8057/Unique_Star.webp",
+        "https://www.prydwen.gg/static/11e12c15d2d5bd001e88e58596cc11c6/d8057/Leg_Lighthouse.webp",
+        "https://www.prydwen.gg/static/127212d5b38034395dcadd6371fbf480/d8057/Leg_Halloween.webp",
+        "https://www.prydwen.gg/static/1ad764b3eecd037a899e31b3034d94a9/d8057/Unique_Tamamo_Doji.webp",
+        "https://www.prydwen.gg/static/2e2a447dac1626cc49af70da05d2f0b4/d8057/Rare_Red_Comet.webp",
+        "https://www.prydwen.gg/static/2fd6fba2d0d04ae7774c05e1b82ba565/d8057/Epic_Shan_Hai_Jing.webp",
+        "https://www.prydwen.gg/static/400ef861df38a1265452a972928d3598/d8057/Leg_Gigabyte.webp",
+      ];
+      const audioAssets = {
+        bgm: "assets/audio/bgm.mp3",
+        deal: "assets/audio/deal.mp3",
+        chip: "assets/audio/chip.mp3",
+        check: "assets/audio/check.mp3",
+        fold: "assets/audio/fold.mp3",
+        win: "assets/audio/win.mp3",
+        lose: "assets/audio/lose.mp3",
+      };
+
+      const state = {
+        players: [],
+        dealerIndex: 0,
+        deck: [],
+        community: [],
+        pot: 0,
+        street: "preflop",
+        currentBet: 0,
+        minRaise: bigBlind,
+        waitingForPlayer: false,
+        gameOver: false,
+        lastWinners: [],
+        currentTurnId: null,
+      };
+
+      const ui = {
+        community: document.getElementById("communityCards"),
+        players: document.getElementById("players"),
+        seats: {
+          north: document.getElementById("seat-north"),
+          east: document.getElementById("seat-east"),
+          south: document.getElementById("seat-south"),
+          west: document.getElementById("seat-west"),
+        },
+        pot: document.getElementById("potText"),
+        status: document.getElementById("statusText"),
+        log: document.getElementById("log"),
+        foldBtn: document.getElementById("foldBtn"),
+        callBtn: document.getElementById("callBtn"),
+        raiseBtn: document.getElementById("raiseBtn"),
+        raiseInput: document.getElementById("raiseInput"),
+        allInBtn: document.getElementById("allInBtn"),
+        newHandBtn: document.getElementById("newHandBtn"),
+        soundBtn: document.getElementById("soundBtn"),
+        quickRaiseButtons: document.querySelectorAll("[data-raise]"),
+        startScreen: document.getElementById("startScreen"),
+        startBtn: document.getElementById("startBtn"),
+      };
+
+      const audioState = {
+        enabled: true,
+        unlocked: false,
+      };
+      let allInConfirmTimeout = null;
+      let gameStarted = false;
+
+      const bgm = new Audio(audioAssets.bgm);
+      bgm.loop = true;
+      bgm.volume = 0.35;
+      bgm.preload = "auto";
+      bgm.autoplay = false;
+
+      const sfx = {
+        deal: new Audio(audioAssets.deal),
+        chip: new Audio(audioAssets.chip),
+        check: new Audio(audioAssets.check),
+        fold: new Audio(audioAssets.fold),
+        win: new Audio(audioAssets.win),
+        lose: new Audio(audioAssets.lose),
+      };
+
+      Object.values(sfx).forEach((clip) => {
+        clip.preload = "auto";
+        clip.volume = 0.7;
+      });
+
+      function unlockAudio() {
+        if (audioState.unlocked) {
+          return;
+        }
+        audioState.unlocked = true;
+        if (audioState.enabled) {
+          bgm.play().catch(() => {});
+        }
+      }
+
+      function toggleSound() {
+        audioState.enabled = !audioState.enabled;
+        ui.soundBtn.textContent = audioState.enabled ? "声音：开" : "声音：关";
+        if (audioState.enabled) {
+          unlockAudio();
+        } else {
+          bgm.pause();
+        }
+      }
+
+      function playSfx(name) {
+        if (!audioState.enabled) {
+          return;
+        }
+        const clip = sfx[name];
+        if (!clip) {
+          return;
+        }
+        clip.currentTime = 0;
+        clip.play().catch(() => {});
+      }
+
+      function initPlayers() {
+        const avatars = shuffleArray(avatarPool.slice());
+        const npcNames = shuffleArray(npcNamePool.slice()).slice(0, 3);
+        state.players = [
+          {
+            id: "player",
+            name: "你",
+            avatar: avatars.pop() || avatarPool[0],
+            chips: startingChips,
+            hand: [],
+            inHand: true,
+            folded: false,
+            allIn: false,
+            betThisRound: 0,
+            totalBet: 0,
+            isHuman: true,
+            lastAction: "",
+            needAction: false,
+          },
+          ...npcNames.map((name, i) => ({
+            id: `npc-${i}`,
+            name,
+            avatar: avatars.pop() || avatarPool[(i + 1) % avatarPool.length],
+            chips: startingChips,
+            hand: [],
+            inHand: true,
+            folded: false,
+            allIn: false,
+            betThisRound: 0,
+            totalBet: 0,
+            isHuman: false,
+            lastAction: "",
+            needAction: false,
+          })),
+        ];
+      }
+
+      function log(text) {
+        const line = document.createElement("div");
+        line.textContent = text;
+        ui.log.appendChild(line);
+        ui.log.scrollTop = ui.log.scrollHeight;
+      }
+
+      function setStatus(text) {
+        ui.status.textContent = text;
+      }
+
+      function render() {
+        const human = state.players[0];
+        const playerBest =
+          state.community.length >= 3
+            ? evaluateBestHandWithCards([...human.hand, ...state.community])
+            : null;
+        const highlightSet = playerBest
+          ? new Set(playerBest.cards)
+          : new Set();
+        ui.community.innerHTML = "";
+        state.community.forEach((card) => {
+          const highlight = highlightSet.has(card);
+          ui.community.appendChild(
+            renderCard(card, false, "community-card", highlight)
+          );
+        });
+        const hiddenCount = 5 - state.community.length;
+        for (let i = 0; i < hiddenCount; i += 1) {
+          const hidden = document.createElement("div");
+          hidden.className = "card community-card back-card";
+          hidden.appendChild(renderCardImage(null, true));
+          ui.community.appendChild(hidden);
+        }
+
+        ui.pot.textContent = `底池 ${state.pot}`;
+
+        Object.values(ui.seats).forEach((seat) => {
+          seat.innerHTML = "";
+        });
+        const seatOrder = [
+          { key: "south", player: state.players[0] },
+          { key: "west", player: state.players[1] },
+          { key: "north", player: state.players[2] },
+          { key: "east", player: state.players[3] },
+        ];
+        seatOrder.forEach(({ key, player }) => {
+          const item = document.createElement("div");
+          const vertical = key === "west" || key === "east" ? " vertical" : "";
+          const isWinner = state.lastWinners.includes(player.id);
+          const isActive = state.currentTurnId === player.id;
+          item.className = `player${vertical}${player.folded ? " folded" : ""}${
+            isWinner ? " winner" : ""
+          }${isActive ? " active-turn" : ""}`;
+          const info = document.createElement("div");
+          const handLabel =
+            player.isHuman && playerBest ? playerBest.label : "";
+          const winnerBadge = isWinner
+            ? `<span class="winner-badge">Winner!</span>`
+            : "";
+          info.innerHTML = `
+            <div class="player-info">
+              <div class="avatar">
+                <img src="${player.avatar}" alt="${player.name}" />
+              </div>
+              <div class="player-details">
+                <div class="player-top">
+                  <div class="name">${player.name}</div>
+                  <div class="meta">筹码 <span class="chips">${player.chips}</span></div>
+                </div>
+                <div class="meta-row">
+                  <div class="meta">本轮下注 <span class="bet-amount">${player.betThisRound}</span></div>
+                  <div class="action">${player.lastAction || ""}</div>
+                </div>
+                ${winnerBadge}
+                ${
+                  handLabel
+                    ? `<div class="meta">最佳牌型 <span class="hand-rank">${handLabel}</span></div>`
+                    : ""
+                }
+              </div>
+            </div>
+          `;
+          const cards = document.createElement("div");
+          cards.className = "cards";
+          const showCards = player.isHuman || state.street === "showdown";
+          player.hand.forEach((card) => {
+            const sizeClass = player.isHuman ? "hero-card" : "player-card";
+            const highlight = player.isHuman && highlightSet.has(card);
+            cards.appendChild(renderCard(card, !showCards, sizeClass, highlight));
+          });
+          item.appendChild(info);
+          item.appendChild(cards);
+          ui.seats[key].appendChild(item);
+        });
+
+        ui.foldBtn.disabled = !state.waitingForPlayer;
+        ui.callBtn.disabled = !state.waitingForPlayer;
+        ui.raiseBtn.disabled = !state.waitingForPlayer;
+        ui.allInBtn.disabled = !state.waitingForPlayer;
+        ui.quickRaiseButtons.forEach((button) => {
+          button.disabled = !state.waitingForPlayer;
+        });
+        if (!state.waitingForPlayer) {
+          resetAllInConfirm();
+        }
+      }
+
+      function renderCard(card, hidden = false, sizeClass = "", highlight = false) {
+        const el = document.createElement("div");
+        const highlightClass = highlight ? " highlight" : "";
+        const backClass = hidden ? " back-card" : "";
+        el.className = `card ${sizeClass}${highlightClass}${backClass}`.trim();
+        el.appendChild(renderCardImage(card, hidden));
+        if (!hidden && card) {
+          const suitClass = isRedSuit(card.suit) ? "suit-red" : "suit-black";
+          const labelTop = document.createElement("div");
+          labelTop.className = `card-label top ${suitClass}`;
+          labelTop.textContent = `${card.rank}${suitSymbols[card.suit]}`;
+          const labelBottom = document.createElement("div");
+          labelBottom.className = `card-label bottom ${suitClass}`;
+          labelBottom.textContent = `${card.rank}${suitSymbols[card.suit]}`;
+          el.appendChild(labelTop);
+          el.appendChild(labelBottom);
+        }
+        return el;
+      }
+
+      function renderCardImage(card, hidden) {
+        const img = document.createElement("img");
+        img.className = "card-art";
+        img.src = hidden ? cardBackUrl : card.art || cardImageUrl(card);
+        img.alt = hidden ? "Card Back" : `${card.rank}${suitSymbols[card.suit]}`;
+        return img;
+      }
+
+      function shuffleArray(list) {
+        for (let i = list.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [list[i], list[j]] = [list[j], list[i]];
+        }
+        return list;
+      }
+
+      function isRedSuit(suit) {
+        return suit === "H" || suit === "D";
+      }
+
+      function cardImageUrl(card) {
+        const rank = card.rank === "10" ? "0" : card.rank;
+        return `https://deckofcardsapi.com/static/img/${rank}${card.suit}.png`;
+      }
+
+      function buildDeck() {
+        const suits = ["S", "H", "D", "C"];
+        const ranks = [
+          "2",
+          "3",
+          "4",
+          "5",
+          "6",
+          "7",
+          "8",
+          "9",
+          "10",
+          "J",
+          "Q",
+          "K",
+          "A",
+        ];
+        const deck = [];
+        const artPool = shuffleArray(etheriaCardImages.slice());
+        let artIndex = 0;
+        suits.forEach((suit) => {
+          ranks.forEach((rank) => {
+            deck.push({
+              suit,
+              rank,
+              art: artPool[artIndex % artPool.length],
+            });
+            artIndex += 1;
+          });
+        });
+        for (let i = deck.length - 1; i > 0; i -= 1) {
+          const j = Math.floor(Math.random() * (i + 1));
+          [deck[i], deck[j]] = [deck[j], deck[i]];
+        }
+        return deck;
+      }
+
+      function drawCard() {
+        return state.deck.pop();
+      }
+
+      function activePlayers() {
+        return state.players.filter((p) => p.inHand && !p.folded);
+      }
+
+      function resetForHand() {
+        state.deck = buildDeck();
+        state.community = [];
+        state.pot = 0;
+        state.street = "preflop";
+        state.currentBet = bigBlind;
+        state.minRaise = bigBlind;
+        state.lastWinners = [];
+        state.currentTurnId = null;
+        state.players.forEach((p) => {
+          p.hand = [];
+          p.inHand = p.chips > 0;
+          p.folded = false;
+          p.allIn = false;
+          p.betThisRound = 0;
+          p.totalBet = 0;
+          p.lastAction = "";
+          p.needAction = false;
+        });
+      }
+
+      function nextActiveIndex(startIndex) {
+        const count = state.players.length;
+        for (let i = 1; i <= count; i += 1) {
+          const idx = (startIndex + i) % count;
+          if (state.players[idx].chips > 0) {
+            return idx;
+          }
+        }
+        return startIndex;
+      }
+
+      function postBlind(player, amount) {
+        const paid = Math.min(player.chips, amount);
+        player.chips -= paid;
+        player.betThisRound += paid;
+        player.totalBet += paid;
+        state.pot += paid;
+        if (player.chips === 0) {
+          player.allIn = true;
+        }
+        player.lastAction = `盲注 ${paid}`;
+        return paid;
+      }
+
+      function dealHoleCards() {
+        for (let r = 0; r < 2; r += 1) {
+          state.players.forEach((player) => {
+            if (player.inHand) {
+              player.hand.push(drawCard());
+            }
+          });
+        }
+      }
+
+      function burnCard() {
+        drawCard();
+      }
+
+      function dealCommunity(count) {
+        for (let i = 0; i < count; i += 1) {
+          state.community.push(drawCard());
+        }
+      }
+
+      function resetRoundBets() {
+        state.players.forEach((player) => {
+          player.betThisRound = 0;
+          player.needAction = player.inHand && !player.allIn;
+        });
+        state.currentBet = 0;
+        state.minRaise = bigBlind;
+      }
+
+      function startHand() {
+        if (state.gameOver) {
+          return;
+        }
+        resetForHand();
+        const dealer = state.dealerIndex;
+        const smallIndex = nextActiveIndex(dealer);
+        const bigIndex = nextActiveIndex(smallIndex);
+        postBlind(state.players[smallIndex], smallBlind);
+        postBlind(state.players[bigIndex], bigBlind);
+        state.currentBet = bigBlind;
+        state.players.forEach((player) => {
+          player.needAction = player.inHand && !player.allIn;
+        });
+        dealHoleCards();
+        render();
+        log(`新的牌局开始，庄家 ${state.players[dealer].name}`);
+        startBettingRound(nextActiveIndex(bigIndex));
+      }
+
+      function startGame() {
+        if (gameStarted) {
+          return;
+        }
+        gameStarted = true;
+        ui.startScreen.classList.add("hidden");
+        unlockAudio();
+        bgm.play().catch(() => {});
+        startHand();
+      }
+
+      function updateNeedActionOnRaise(raiser) {
+        state.players.forEach((player) => {
+          if (!player.inHand || player.allIn) {
+            player.needAction = false;
+          } else {
+            player.needAction = player !== raiser;
+          }
+        });
+      }
+
+      function allActionsComplete() {
+        return state.players.every((player) => !player.needAction);
+      }
+
+      function remainingInHand() {
+        return activePlayers().length;
+      }
+
+      function moveToNextStreet() {
+        state.players.forEach((player) => {
+          player.betThisRound = 0;
+          player.needAction = player.inHand && !player.allIn;
+        });
+        if (remainingInHand() <= 1) {
+          finishHand();
+          return;
+        }
+        if (state.street === "preflop") {
+          burnCard();
+          dealCommunity(3);
+          state.street = "flop";
+          log("翻牌");
+        } else if (state.street === "flop") {
+          burnCard();
+          dealCommunity(1);
+          state.street = "turn";
+          log("转牌");
+        } else if (state.street === "turn") {
+          burnCard();
+          dealCommunity(1);
+          state.street = "river";
+          log("河牌");
+        } else if (state.street === "river") {
+          state.street = "showdown";
+          finishHand();
+          return;
+        }
+        state.currentBet = 0;
+        state.minRaise = bigBlind;
+        render();
+        startBettingRound(nextActiveIndex(state.dealerIndex));
+      }
+
+      function finishHand() {
+        state.street = "showdown";
+        const active = activePlayers();
+        if (active.length === 1) {
+          active[0].chips += state.pot;
+          log(`${active[0].name} 赢得底池 ${state.pot}`);
+          state.lastWinners = [active[0].id];
+          state.pot = 0;
+        } else {
+          distributePot();
+        }
+        render();
+        checkGameOver();
+        state.dealerIndex = nextActiveIndex(state.dealerIndex);
+        setStatus("本局结束");
+      }
+
+      function distributePot() {
+        const sidePots = buildSidePots();
+        const winnersSet = new Set();
+        sidePots.forEach((pot) => {
+          const winners = bestHandWinners(pot.eligiblePlayers);
+          const share = Math.floor(pot.amount / winners.length);
+          let remainder = pot.amount - share * winners.length;
+          winners.forEach((winner) => {
+            winner.chips += share;
+            winnersSet.add(winner.id);
+          });
+          if (remainder > 0) {
+            const order = orderFromDealer(winners);
+            for (let i = 0; i < remainder; i += 1) {
+              order[i % order.length].chips += 1;
+            }
+          }
+          log(
+            `${winners.map((p) => p.name).join(", ")} 赢得 ${pot.amount}`
+          );
+        });
+        state.lastWinners = Array.from(winnersSet);
+        state.pot = 0;
+      }
+
+      function orderFromDealer(players) {
+        const order = [];
+        let idx = nextActiveIndex(state.dealerIndex);
+        for (let i = 0; i < state.players.length; i += 1) {
+          const player = state.players[idx];
+          if (players.includes(player)) {
+            order.push(player);
+          }
+          idx = (idx + 1) % state.players.length;
+        }
+        return order.length ? order : players;
+      }
+
+      function buildSidePots() {
+        const contributors = state.players.filter((p) => p.totalBet > 0);
+        const levels = [...new Set(contributors.map((p) => p.totalBet))].sort(
+          (a, b) => a - b
+        );
+        let prev = 0;
+        const pots = [];
+        levels.forEach((level) => {
+          const eligible = contributors.filter((p) => p.totalBet >= level);
+          const amount = (level - prev) * eligible.length;
+          const activeEligible = eligible.filter((p) => p.inHand && !p.folded);
+          if (amount > 0) {
+            pots.push({ amount, eligiblePlayers: activeEligible });
+          }
+          prev = level;
+        });
+        return pots;
+      }
+
+      async function startBettingRound(startIndex) {
+        setStatus(
+          state.street === "preflop"
+            ? "翻牌前下注"
+            : state.street === "flop"
+            ? "翻牌下注"
+            : state.street === "turn"
+            ? "转牌下注"
+            : state.street === "river"
+            ? "河牌下注"
+            : "摊牌"
+        );
+        let index = startIndex;
+        while (!allActionsComplete()) {
+          const player = state.players[index];
+          if (player.needAction && player.inHand && !player.folded) {
+            state.currentTurnId = player.id;
+            render();
+            if (player.isHuman) {
+              await waitForPlayerAction(player);
+            } else {
+              await npcAction(player);
+            }
+          }
+          index = (index + 1) % state.players.length;
+        }
+        state.currentTurnId = null;
+        moveToNextStreet();
+      }
+
+      function waitForPlayerAction() {
+        state.waitingForPlayer = true;
+        render();
+        return new Promise((resolve) => {
+          state.resolvePlayerAction = resolve;
+        });
+      }
+
+      function endPlayerAction() {
+        state.waitingForPlayer = false;
+        render();
+        if (state.resolvePlayerAction) {
+          state.resolvePlayerAction();
+          state.resolvePlayerAction = null;
+        }
+      }
+
+      function playerFold() {
+        const player = state.players[0];
+        player.folded = true;
+        player.inHand = false;
+        player.needAction = false;
+        player.lastAction = "弃牌";
+        log("你弃牌");
+        playSfx("fold");
+        endPlayerAction();
+      }
+
+      function playerCallOrCheck() {
+        const player = state.players[0];
+        const callAmount = Math.max(0, state.currentBet - player.betThisRound);
+        if (callAmount === 0) {
+          player.needAction = false;
+          player.lastAction = "过牌";
+          log("你过牌");
+          playSfx("check");
+        } else {
+          const paid = bet(player, callAmount);
+          player.lastAction = paid < callAmount ? "全下跟注" : "跟注";
+          log(`你跟注 ${paid}`);
+          playSfx("chip");
+        }
+        endPlayerAction();
+      }
+
+      function playerRaise() {
+        const player = state.players[0];
+        const inputValue = Number(ui.raiseInput.value);
+        const minTotal = state.currentBet + state.minRaise;
+        let raiseTo = Number.isFinite(inputValue) ? inputValue : minTotal;
+        if (raiseTo < minTotal) {
+          raiseTo = minTotal;
+        }
+        if (raiseTo > player.betThisRound + player.chips) {
+          raiseTo = player.betThisRound + player.chips;
+        }
+        const raiseAmount = raiseTo - player.betThisRound;
+        if (raiseAmount <= 0) {
+          playerCallOrCheck();
+          return;
+        }
+        const raiseSize = raiseTo - state.currentBet;
+        bet(player, raiseAmount);
+        state.currentBet = raiseTo;
+        state.minRaise = Math.max(state.minRaise, raiseSize);
+        updateNeedActionOnRaise(player);
+        player.lastAction = player.allIn ? "全下" : "加注";
+        log(`你加注至 ${player.betThisRound}`);
+        playSfx("chip");
+        endPlayerAction();
+      }
+
+      function playerAllIn() {
+        const player = state.players[0];
+        const raiseTo = player.betThisRound + player.chips;
+        const raiseAmount = player.chips;
+        bet(player, raiseAmount);
+        if (raiseTo > state.currentBet) {
+          const raiseSize = raiseTo - state.currentBet;
+          state.minRaise = Math.max(state.minRaise, raiseSize);
+          state.currentBet = raiseTo;
+          updateNeedActionOnRaise(player);
+          log(`你全下至 ${raiseTo}`);
+        } else {
+          log("你全下");
+        }
+        player.lastAction = "全下";
+        playSfx("chip");
+        endPlayerAction();
+      }
+
+      function requestAllIn() {
+        if (!state.waitingForPlayer) {
+          return;
+        }
+        if (!state.allInConfirm) {
+          state.allInConfirm = true;
+          ui.allInBtn.textContent = "确认全下";
+          if (allInConfirmTimeout) {
+            clearTimeout(allInConfirmTimeout);
+          }
+          allInConfirmTimeout = setTimeout(() => {
+            resetAllInConfirm();
+          }, 2000);
+          return;
+        }
+        resetAllInConfirm();
+        playerAllIn();
+      }
+
+      function resetAllInConfirm() {
+        state.allInConfirm = false;
+        ui.allInBtn.textContent = "全下";
+        if (allInConfirmTimeout) {
+          clearTimeout(allInConfirmTimeout);
+          allInConfirmTimeout = null;
+        }
+      }
+
+      function applyQuickRaise(delta) {
+        const player = state.players[0];
+        const minTotal = state.currentBet + state.minRaise;
+        const base = Math.max(state.currentBet, player.betThisRound);
+        let raiseTo = base + delta;
+        if (raiseTo < minTotal) {
+          raiseTo = minTotal;
+        }
+        const maxTotal = player.betThisRound + player.chips;
+        if (raiseTo > maxTotal) {
+          raiseTo = maxTotal;
+        }
+        ui.raiseInput.value = String(raiseTo);
+      }
+
+      function quickRaiseAndAct(delta) {
+        if (!state.waitingForPlayer) {
+          return;
+        }
+        applyQuickRaise(delta);
+        playerRaise();
+      }
+
+      function bet(player, amount) {
+        const actual = Math.min(player.chips, amount);
+        player.chips -= actual;
+        player.betThisRound += actual;
+        player.totalBet += actual;
+        state.pot += actual;
+        if (player.chips === 0) {
+          player.allIn = true;
+        }
+        player.needAction = false;
+        return actual;
+      }
+
+      function npcAction(player) {
+        return new Promise((resolve) => {
+          const thinkDelay = 3000 + Math.floor(Math.random() * 2000);
+          setTimeout(() => {
+            const action = decideNpcAction(player);
+            if (action.type === "fold") {
+              player.folded = true;
+              player.inHand = false;
+              player.needAction = false;
+              player.lastAction = "弃牌";
+              log(`${player.name} 弃牌`);
+              playSfx("fold");
+            } else if (action.type === "call") {
+              const paid = bet(player, action.amount);
+              player.lastAction = paid < action.amount ? "全下跟注" : "跟注";
+              log(`${player.name} 跟注 ${paid}`);
+              playSfx("chip");
+            } else if (action.type === "check") {
+              player.needAction = false;
+              player.lastAction = "过牌";
+              log(`${player.name} 过牌`);
+              playSfx("check");
+            } else if (action.type === "raise") {
+              const raiseAmount = action.raiseTo - player.betThisRound;
+              const raiseSize = action.raiseTo - state.currentBet;
+              bet(player, raiseAmount);
+              state.minRaise = Math.max(state.minRaise, raiseSize);
+              state.currentBet = action.raiseTo;
+              updateNeedActionOnRaise(player);
+              player.lastAction = "加注";
+              log(`${player.name} 加注至 ${action.raiseTo}`);
+              playSfx("chip");
+            }
+            render();
+            resolve();
+          }, 500);
+        });
+      }
+
+      function decideNpcAction(player) {
+        const callAmount = Math.max(0, state.currentBet - player.betThisRound);
+        const strength = estimateStrength(player);
+        const canRaise = player.chips > callAmount + state.minRaise;
+        if (state.currentBet === 0) {
+          if (strength > 0.72 && canRaise) {
+            const raiseTo = state.minRaise;
+            return { type: "raise", raiseTo };
+          }
+          if (strength > 0.4 && Math.random() < 0.35 && canRaise) {
+            return { type: "raise", raiseTo: state.minRaise };
+          }
+          return { type: "check" };
+        }
+        if (strength < 0.25 && callAmount > player.chips * 0.2) {
+          return { type: "fold" };
+        }
+        if (strength > 0.75 && canRaise && Math.random() < 0.4) {
+          return { type: "raise", raiseTo: state.currentBet + state.minRaise };
+        }
+        if (callAmount >= player.chips) {
+          return { type: "call", amount: player.chips };
+        }
+        return { type: "call", amount: callAmount };
+      }
+
+      function estimateStrength(player) {
+        const cards = [...player.hand, ...state.community];
+        if (cards.length >= 5) {
+          const { score } = evaluateBestHand(cards);
+          return score / 8000000;
+        }
+        const high = Math.max(
+          ...player.hand.map((card) => rankValue(card.rank))
+        );
+        const pair = player.hand[0].rank === player.hand[1].rank ? 0.2 : 0;
+        return (high - 2) / 12 + pair;
+      }
+
+      function rankValue(rank) {
+        if (rank === "A") return 14;
+        if (rank === "K") return 13;
+        if (rank === "Q") return 12;
+        if (rank === "J") return 11;
+        return Number(rank);
+      }
+
+      function evaluateBestHand(cards) {
+        const combos = combinations(cards, 5);
+        let best = null;
+        combos.forEach((combo) => {
+          const evalHand = evaluateFive(combo);
+          if (!best || compareHands(evalHand, best) > 0) {
+            best = evalHand;
+          }
+        });
+        return best;
+      }
+
+      function evaluateBestHandWithCards(cards) {
+        const combos = combinations(cards, 5);
+        let best = null;
+        let bestCards = null;
+        combos.forEach((combo) => {
+          const evalHand = evaluateFive(combo);
+          if (!best || compareHands(evalHand, best) > 0) {
+            best = evalHand;
+            bestCards = combo.slice();
+          }
+        });
+        return {
+          hand: best,
+          cards: bestCards || [],
+          label: best ? handRankLabel(best.rank) : "",
+        };
+      }
+
+      function combinations(arr, choose) {
+        const result = [];
+        function helper(start, combo) {
+          if (combo.length === choose) {
+            result.push(combo.slice());
+            return;
+          }
+          for (let i = start; i < arr.length; i += 1) {
+            combo.push(arr[i]);
+            helper(i + 1, combo);
+            combo.pop();
+          }
+        }
+        helper(0, []);
+        return result;
+      }
+
+      function evaluateFive(cards) {
+        const values = cards.map((c) => rankValue(c.rank)).sort((a, b) => b - a);
+        const suits = cards.map((c) => c.suit);
+        const counts = {};
+        values.forEach((v) => {
+          counts[v] = (counts[v] || 0) + 1;
+        });
+        const uniqueValues = Object.keys(counts)
+          .map(Number)
+          .sort((a, b) => b - a);
+        const isFlush = suits.every((s) => s === suits[0]);
+        const isStraight = checkStraight(values);
+        if (isFlush && isStraight) {
+          return { rank: 8, tiebreaker: [isStraight], score: 8000000 + isStraight };
+        }
+        if (hasCount(counts, 4)) {
+          const four = uniqueValues.find((v) => counts[v] === 4);
+          const kicker = uniqueValues.find((v) => counts[v] === 1);
+          return {
+            rank: 7,
+            tiebreaker: [four, kicker],
+            score: 7000000 + four * 100 + kicker,
+          };
+        }
+        if (hasCount(counts, 3) && hasCount(counts, 2)) {
+          const three = uniqueValues.find((v) => counts[v] === 3);
+          const pair = uniqueValues.find((v) => counts[v] === 2);
+          return {
+            rank: 6,
+            tiebreaker: [three, pair],
+            score: 6000000 + three * 100 + pair,
+          };
+        }
+        if (isFlush) {
+          return {
+            rank: 5,
+            tiebreaker: values,
+            score: 5000000 + scoreHigh(values),
+          };
+        }
+        if (isStraight) {
+          return { rank: 4, tiebreaker: [isStraight], score: 4000000 + isStraight };
+        }
+        if (hasCount(counts, 3)) {
+          const three = uniqueValues.find((v) => counts[v] === 3);
+          const kickers = uniqueValues.filter((v) => counts[v] === 1);
+          return {
+            rank: 3,
+            tiebreaker: [three, ...kickers],
+            score: 3000000 + three * 10000 + scoreHigh(kickers),
+          };
+        }
+        const pairs = uniqueValues.filter((v) => counts[v] === 2);
+        if (pairs.length === 2) {
+          const [highPair, lowPair] = pairs.sort((a, b) => b - a);
+          const kicker = uniqueValues.find((v) => counts[v] === 1);
+          return {
+            rank: 2,
+            tiebreaker: [highPair, lowPair, kicker],
+            score: 2000000 + highPair * 10000 + lowPair * 100 + kicker,
+          };
+        }
+        if (pairs.length === 1) {
+          const pair = pairs[0];
+          const kickers = uniqueValues.filter((v) => counts[v] === 1);
+          return {
+            rank: 1,
+            tiebreaker: [pair, ...kickers],
+            score: 1000000 + pair * 100000 + scoreHigh(kickers),
+          };
+        }
+        return { rank: 0, tiebreaker: values, score: scoreHigh(values) };
+      }
+
+      function scoreHigh(values) {
+        return values.reduce((acc, v, i) => acc + v * Math.pow(15, 4 - i), 0);
+      }
+
+      function checkStraight(values) {
+        const unique = [...new Set(values)];
+        if (unique.length < 5) {
+          return 0;
+        }
+        const sorted = unique.sort((a, b) => b - a);
+        for (let i = 0; i <= sorted.length - 5; i += 1) {
+          const slice = sorted.slice(i, i + 5);
+          if (slice[0] - slice[4] === 4) {
+            return slice[0];
+          }
+        }
+        const wheel = [14, 5, 4, 3, 2];
+        if (wheel.every((v) => sorted.includes(v))) {
+          return 5;
+        }
+        return 0;
+      }
+
+      function hasCount(counts, target) {
+        return Object.values(counts).some((count) => count === target);
+      }
+
+      function compareHands(a, b) {
+        if (a.rank !== b.rank) {
+          return a.rank > b.rank ? 1 : -1;
+        }
+        for (let i = 0; i < a.tiebreaker.length; i += 1) {
+          if (a.tiebreaker[i] !== b.tiebreaker[i]) {
+            return a.tiebreaker[i] > b.tiebreaker[i] ? 1 : -1;
+          }
+        }
+        return 0;
+      }
+
+      function handRankLabel(rank) {
+        switch (rank) {
+          case 8:
+            return "同花顺";
+          case 7:
+            return "四条";
+          case 6:
+            return "葫芦";
+          case 5:
+            return "同花";
+          case 4:
+            return "顺子";
+          case 3:
+            return "三条";
+          case 2:
+            return "两对";
+          case 1:
+            return "一对";
+          default:
+            return "高牌";
+        }
+      }
+
+      function bestHandWinners(players) {
+        let best = null;
+        let winners = [];
+        players.forEach((player) => {
+          const hand = evaluateBestHand([...player.hand, ...state.community]);
+          if (!best || compareHands(hand, best) > 0) {
+            best = hand;
+            winners = [player];
+          } else if (compareHands(hand, best) === 0) {
+            winners.push(player);
+          }
+        });
+        return winners;
+      }
+
+      function checkGameOver() {
+        const player = state.players[0];
+        const npcs = state.players.slice(1);
+        if (player.chips <= 0) {
+          state.gameOver = true;
+          setStatus("你输光筹码，游戏失败");
+          playSfx("lose");
+        } else if (npcs.every((npc) => npc.chips <= 0)) {
+          state.gameOver = true;
+          setStatus("你赢得全部筹码，游戏胜利");
+          playSfx("win");
+        }
+      }
+
+      ui.foldBtn.addEventListener("click", playerFold);
+      ui.callBtn.addEventListener("click", playerCallOrCheck);
+      ui.raiseBtn.addEventListener("click", playerRaise);
+      ui.allInBtn.addEventListener("click", requestAllIn);
+      ui.quickRaiseButtons.forEach((button) => {
+        button.addEventListener("click", () => {
+          const delta = Number(button.dataset.raise || 0);
+          if (Number.isFinite(delta)) {
+            quickRaiseAndAct(delta);
+          }
+        });
+      });
+      ui.soundBtn.addEventListener("click", toggleSound);
+      ui.startBtn.addEventListener("click", startGame);
+      ui.newHandBtn.addEventListener("click", () => {
+        if (state.waitingForPlayer) {
+          return;
+        }
+        if (!gameStarted) {
+          return;
+        }
+        startHand();
+      });
+
+      document.addEventListener("click", unlockAudio, { once: true });
+
+      initPlayers();
+      render();
+      setStatus("等待开始");
+    </script>
+  </body>
+</html>
