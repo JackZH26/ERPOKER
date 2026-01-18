@@ -337,32 +337,18 @@
         font-size: 12px;
         font-weight: 700;
       }
-      .next-hand-overlay {
-        position: fixed;
-        inset: 0;
-        z-index: 998;
-        display: flex;
-        align-items: center;
-        justify-content: center;
-        background: rgba(11, 17, 21, 0.85);
-        backdrop-filter: blur(4px);
-      }
-      .next-hand-overlay.hidden {
+      .next-hand-btn-large {
         display: none;
+        width: 100%;
+        padding: 16px;
+        font-size: 18px;
+        font-weight: 700;
+        background: var(--gold);
+        color: #1b1605;
+        border-radius: 12px;
       }
-      .next-hand-dialog {
-        background: var(--panel);
-        border-radius: 16px;
-        padding: 24px;
-        text-align: center;
-        border: 1px solid #2b3f47;
-      }
-      .next-hand-dialog h2 {
-        margin: 0 0 16px 0;
-        font-size: 20px;
-      }
-      .next-hand-dialog button {
-        min-width: 160px;
+      .next-hand-btn-large.show {
+        display: block;
       }
       .lang-dropdown {
         position: relative;
@@ -712,12 +698,6 @@
         <button id="startBtn" class="start-btn" data-i18n="startGame">开始游戏</button>
       </div>
     </div>
-    <div class="next-hand-overlay hidden" id="nextHandOverlay">
-      <div class="next-hand-dialog">
-        <h2 data-i18n="handOver">本局结束</h2>
-        <button id="nextHandBtn" data-i18n="continueNext">继续下一局</button>
-      </div>
-    </div>
     <div class="app">
       <header>
         <div>
@@ -753,11 +733,12 @@
 
         <section class="side-panel">
           <section class="controls">
-            <div class="buttons">
+            <div class="buttons" id="actionButtons">
               <button id="foldBtn" class="danger" data-i18n="fold">弃牌</button>
               <button id="callBtn" data-i18n="callCheck">跟注 / 过牌</button>
               <button id="raiseBtn" data-i18n="raise">加注</button>
             </div>
+            <button id="nextHandBtnLarge" class="next-hand-btn-large" data-i18n="continueNext">继续下一局</button>
             <div class="quick-raises">
               <button class="secondary" data-raise="10">+10</button>
               <button class="secondary" data-raise="20">+20</button>
@@ -1204,8 +1185,8 @@
         quickRaiseButtons: document.querySelectorAll("[data-raise]"),
         startScreen: document.getElementById("startScreen"),
         startBtn: document.getElementById("startBtn"),
-        nextHandOverlay: document.getElementById("nextHandOverlay"),
-        nextHandBtn: document.getElementById("nextHandBtn"),
+        nextHandBtnLarge: document.getElementById("nextHandBtnLarge"),
+        actionButtons: document.getElementById("actionButtons"),
       };
 
       const audioState = {
@@ -1720,7 +1701,17 @@
         checkGameOver();
         state.dealerIndex = nextActiveIndex(state.dealerIndex);
         setStatus(t("handEnded"));
-        ui.nextHandOverlay.classList.remove("hidden");
+        showNextHandButton();
+      }
+
+      function showNextHandButton() {
+        ui.actionButtons.style.display = "none";
+        ui.nextHandBtnLarge.classList.add("show");
+      }
+
+      function hideNextHandButton() {
+        ui.actionButtons.style.display = "";
+        ui.nextHandBtnLarge.classList.remove("show");
       }
 
       function distributePot() {
@@ -2291,9 +2282,9 @@
         });
       });
       ui.startBtn.addEventListener("click", startGame);
-      ui.nextHandBtn.addEventListener("click", () => {
-        ui.nextHandOverlay.classList.add("hidden");
-        if (!gameStarted) {
+      ui.nextHandBtnLarge.addEventListener("click", () => {
+        hideNextHandButton();
+        if (!gameStarted || state.gameOver) {
           return;
         }
         startHand();
