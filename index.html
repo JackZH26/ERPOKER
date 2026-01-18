@@ -337,6 +337,66 @@
         font-size: 12px;
         font-weight: 700;
       }
+      .next-hand-overlay {
+        position: fixed;
+        inset: 0;
+        z-index: 998;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        background: rgba(11, 17, 21, 0.85);
+        backdrop-filter: blur(4px);
+      }
+      .next-hand-overlay.hidden {
+        display: none;
+      }
+      .next-hand-dialog {
+        background: var(--panel);
+        border-radius: 16px;
+        padding: 24px;
+        text-align: center;
+        border: 1px solid #2b3f47;
+      }
+      .next-hand-dialog h2 {
+        margin: 0 0 16px 0;
+        font-size: 20px;
+      }
+      .next-hand-dialog button {
+        min-width: 160px;
+      }
+      .lang-dropdown {
+        position: relative;
+      }
+      .lang-menu {
+        position: absolute;
+        top: 100%;
+        right: 0;
+        margin-top: 4px;
+        background: var(--panel);
+        border: 1px solid #2b3f47;
+        border-radius: 8px;
+        padding: 4px;
+        min-width: 120px;
+        z-index: 100;
+      }
+      .lang-menu.hidden {
+        display: none;
+      }
+      .lang-menu button {
+        width: 100%;
+        text-align: left;
+        padding: 8px 12px;
+        margin: 2px 0;
+        background: transparent;
+        border-radius: 6px;
+      }
+      .lang-menu button:hover {
+        background: #1f3640;
+      }
+      .lang-menu button.active {
+        background: var(--accent);
+        color: #0b1c1f;
+      }
       .controls {
         background: var(--panel);
         border-radius: 12px;
@@ -648,26 +708,40 @@
     <div class="start-screen" id="startScreen">
       <div class="start-bg"></div>
       <div class="start-content">
-        <div class="start-title">Etheria Poker</div>
-        <button id="startBtn" class="start-btn">开始游戏</button>
+        <div class="start-title" data-i18n="gameTitle">Etheria Poker</div>
+        <button id="startBtn" class="start-btn" data-i18n="startGame">开始游戏</button>
+      </div>
+    </div>
+    <div class="next-hand-overlay hidden" id="nextHandOverlay">
+      <div class="next-hand-dialog">
+        <h2 data-i18n="handOver">本局结束</h2>
+        <button id="nextHandBtn" data-i18n="continueNext">继续下一局</button>
       </div>
     </div>
     <div class="app">
       <header>
         <div>
-          <h1>Etheria Poker</h1>
-          <div class="status" id="statusText">准备开始</div>
+          <h1 data-i18n="gameTitle">Etheria Poker</h1>
+          <div class="status" id="statusText" data-i18n="ready">准备开始</div>
         </div>
         <div class="header-actions">
+          <div class="lang-dropdown">
+            <button id="langBtn" class="secondary">中文</button>
+            <div id="langMenu" class="lang-menu hidden">
+              <button data-lang="zh">中文</button>
+              <button data-lang="en">English</button>
+              <button data-lang="de">Deutsch</button>
+              <button data-lang="ja">日本語</button>
+            </div>
+          </div>
           <button id="fullscreenBtn" class="secondary">全屏</button>
           <button id="soundBtn" class="secondary">声音：开</button>
-          <button id="newHandBtn" class="secondary">下一局</button>
         </div>
       </header>
 
       <section class="game-layout">
         <section class="table">
-          <div class="pot" id="potText">底池 0</div>
+          <div class="pot" id="potText" data-i18n-key="pot" data-i18n-value="0">底池 0</div>
           <div class="table-center">
             <div class="community" id="communityCards"></div>
           </div>
@@ -680,9 +754,9 @@
         <section class="side-panel">
           <section class="controls">
             <div class="buttons">
-              <button id="foldBtn" class="danger">弃牌</button>
-              <button id="callBtn">跟注 / 过牌</button>
-              <button id="raiseBtn">加注</button>
+              <button id="foldBtn" class="danger" data-i18n="fold">弃牌</button>
+              <button id="callBtn" data-i18n="callCheck">跟注 / 过牌</button>
+              <button id="raiseBtn" data-i18n="raise">加注</button>
             </div>
             <div class="quick-raises">
               <button class="secondary" data-raise="10">+10</button>
@@ -696,9 +770,10 @@
                 type="number"
                 min="0"
                 step="1"
+                data-i18n-placeholder="raiseAmount"
                 placeholder="加注金额（总下注）"
               />
-              <button id="allInBtn" class="secondary">全下</button>
+              <button id="allInBtn" class="secondary" data-i18n="allIn">全下</button>
             </div>
           </section>
 
@@ -708,6 +783,261 @@
     </div>
 
     <script>
+      const translations = {
+        zh: {
+          gameTitle: "Etheria Poker",
+          startGame: "开始游戏",
+          ready: "准备开始",
+          waiting: "等待开始",
+          pot: "底池",
+          fold: "弃牌",
+          callCheck: "跟注 / 过牌",
+          raise: "加注",
+          allIn: "全下",
+          confirmAllIn: "确认全下",
+          raiseAmount: "加注金额（总下注）",
+          fullscreen: "全屏",
+          exitFullscreen: "退出全屏",
+          soundOn: "声音：开",
+          soundOff: "声音：关",
+          handOver: "本局结束",
+          continueNext: "继续下一局",
+          you: "你",
+          chips: "筹码",
+          bet: "本轮下注",
+          bestHand: "最佳牌型",
+          winner: "Winner!",
+          preflopBetting: "翻牌前下注",
+          flopBetting: "翻牌下注",
+          turnBetting: "转牌下注",
+          riverBetting: "河牌下注",
+          showdown: "摊牌",
+          handEnded: "本局结束",
+          newHand: "新的牌局开始，庄家",
+          flop: "翻牌",
+          turn: "转牌",
+          river: "河牌",
+          playerFolded: "弃牌",
+          playerCalled: "跟注",
+          playerChecked: "过牌",
+          playerRaised: "加注至",
+          playerAllIn: "全下",
+          playerAllInCall: "全下跟注",
+          playerWins: "赢得底池",
+          playerWinsAmount: "赢得",
+          gameOver: "你输光筹码，游戏失败",
+          gameWin: "你赢得全部筹码，游戏胜利",
+          blind: "盲注",
+          royalFlush: "同花顺",
+          fourOfKind: "四条",
+          fullHouse: "葫芦",
+          flush: "同花",
+          straight: "顺子",
+          threeOfKind: "三条",
+          twoPair: "两对",
+          onePair: "一对",
+          highCard: "高牌",
+        },
+        en: {
+          gameTitle: "Etheria Poker",
+          startGame: "Start Game",
+          ready: "Ready",
+          waiting: "Waiting",
+          pot: "Pot",
+          fold: "Fold",
+          callCheck: "Call / Check",
+          raise: "Raise",
+          allIn: "All-In",
+          confirmAllIn: "Confirm All-In",
+          raiseAmount: "Raise Amount (Total)",
+          fullscreen: "Fullscreen",
+          exitFullscreen: "Exit Fullscreen",
+          soundOn: "Sound: On",
+          soundOff: "Sound: Off",
+          handOver: "Hand Over",
+          continueNext: "Continue Next Hand",
+          you: "You",
+          chips: "Chips",
+          bet: "Bet",
+          bestHand: "Best Hand",
+          winner: "Winner!",
+          preflopBetting: "Pre-Flop Betting",
+          flopBetting: "Flop Betting",
+          turnBetting: "Turn Betting",
+          riverBetting: "River Betting",
+          showdown: "Showdown",
+          handEnded: "Hand Ended",
+          newHand: "New hand started, dealer",
+          flop: "Flop",
+          turn: "Turn",
+          river: "River",
+          playerFolded: "folded",
+          playerCalled: "called",
+          playerChecked: "checked",
+          playerRaised: "raised to",
+          playerAllIn: "all-in",
+          playerAllInCall: "all-in call",
+          playerWins: "wins pot",
+          playerWinsAmount: "wins",
+          gameOver: "You lost all chips, game over",
+          gameWin: "You won all chips, victory!",
+          blind: "blind",
+          royalFlush: "Straight Flush",
+          fourOfKind: "Four of a Kind",
+          fullHouse: "Full House",
+          flush: "Flush",
+          straight: "Straight",
+          threeOfKind: "Three of a Kind",
+          twoPair: "Two Pair",
+          onePair: "One Pair",
+          highCard: "High Card",
+        },
+        de: {
+          gameTitle: "Etheria Poker",
+          startGame: "Spiel starten",
+          ready: "Bereit",
+          waiting: "Warten",
+          pot: "Pot",
+          fold: "Aussteigen",
+          callCheck: "Mitgehen / Schieben",
+          raise: "Erhöhen",
+          allIn: "All-In",
+          confirmAllIn: "All-In bestätigen",
+          raiseAmount: "Erhöhungsbetrag (Gesamt)",
+          fullscreen: "Vollbild",
+          exitFullscreen: "Vollbild beenden",
+          soundOn: "Ton: An",
+          soundOff: "Ton: Aus",
+          handOver: "Runde beendet",
+          continueNext: "Nächste Runde",
+          you: "Du",
+          chips: "Chips",
+          bet: "Einsatz",
+          bestHand: "Beste Hand",
+          winner: "Gewinner!",
+          preflopBetting: "Pre-Flop Wetten",
+          flopBetting: "Flop Wetten",
+          turnBetting: "Turn Wetten",
+          riverBetting: "River Wetten",
+          showdown: "Showdown",
+          handEnded: "Runde beendet",
+          newHand: "Neue Runde begonnen, Dealer",
+          flop: "Flop",
+          turn: "Turn",
+          river: "River",
+          playerFolded: "ausgestiegen",
+          playerCalled: "mitgegangen",
+          playerChecked: "geschoben",
+          playerRaised: "erhöht auf",
+          playerAllIn: "All-In",
+          playerAllInCall: "All-In Mitgehen",
+          playerWins: "gewinnt Pot",
+          playerWinsAmount: "gewinnt",
+          gameOver: "Du hast alle Chips verloren",
+          gameWin: "Du hast alle Chips gewonnen!",
+          blind: "Blind",
+          royalFlush: "Straight Flush",
+          fourOfKind: "Vierling",
+          fullHouse: "Full House",
+          flush: "Flush",
+          straight: "Straße",
+          threeOfKind: "Drilling",
+          twoPair: "Zwei Paare",
+          onePair: "Ein Paar",
+          highCard: "Höchste Karte",
+        },
+        ja: {
+          gameTitle: "Etheria Poker",
+          startGame: "ゲーム開始",
+          ready: "準備完了",
+          waiting: "待機中",
+          pot: "ポット",
+          fold: "フォールド",
+          callCheck: "コール / チェック",
+          raise: "レイズ",
+          allIn: "オールイン",
+          confirmAllIn: "オールイン確認",
+          raiseAmount: "レイズ額（合計）",
+          fullscreen: "全画面",
+          exitFullscreen: "全画面解除",
+          soundOn: "サウンド：オン",
+          soundOff: "サウンド：オフ",
+          handOver: "ハンド終了",
+          continueNext: "次のハンドへ",
+          you: "あなた",
+          chips: "チップ",
+          bet: "ベット",
+          bestHand: "ベストハンド",
+          winner: "勝者！",
+          preflopBetting: "プリフロップ",
+          flopBetting: "フロップ",
+          turnBetting: "ターン",
+          riverBetting: "リバー",
+          showdown: "ショーダウン",
+          handEnded: "ハンド終了",
+          newHand: "新しいハンドが開始、ディーラー",
+          flop: "フロップ",
+          turn: "ターン",
+          river: "リバー",
+          playerFolded: "フォールド",
+          playerCalled: "コール",
+          playerChecked: "チェック",
+          playerRaised: "レイズ",
+          playerAllIn: "オールイン",
+          playerAllInCall: "オールインコール",
+          playerWins: "がポットを獲得",
+          playerWinsAmount: "が獲得",
+          gameOver: "チップを全て失いました",
+          gameWin: "全てのチップを獲得しました！",
+          blind: "ブラインド",
+          royalFlush: "ストレートフラッシュ",
+          fourOfKind: "フォーカード",
+          fullHouse: "フルハウス",
+          flush: "フラッシュ",
+          straight: "ストレート",
+          threeOfKind: "スリーカード",
+          twoPair: "ツーペア",
+          onePair: "ワンペア",
+          highCard: "ハイカード",
+        },
+      };
+
+      let currentLang = "zh";
+
+      function t(key) {
+        return translations[currentLang][key] || key;
+      }
+
+      function updateAllTranslations() {
+        document.querySelectorAll("[data-i18n]").forEach((el) => {
+          const key = el.getAttribute("data-i18n");
+          el.textContent = t(key);
+        });
+        document.querySelectorAll("[data-i18n-placeholder]").forEach((el) => {
+          const key = el.getAttribute("data-i18n-placeholder");
+          el.placeholder = t(key);
+        });
+        ui.soundBtn.textContent = audioState.enabled ? t("soundOn") : t("soundOff");
+        ui.fullscreenBtn.textContent = document.fullscreenElement
+          ? t("exitFullscreen")
+          : t("fullscreen");
+        ui.langBtn.textContent =
+          currentLang === "zh"
+            ? "中文"
+            : currentLang === "en"
+            ? "English"
+            : currentLang === "de"
+            ? "Deutsch"
+            : "日本語";
+        updateAllInButtonText();
+        render();
+      }
+
+      function setLanguage(lang) {
+        currentLang = lang;
+        updateAllTranslations();
+      }
+
       const smallBlind = 5;
       const bigBlind = 10;
       const startingChips = 1000;
@@ -867,12 +1197,15 @@
         raiseBtn: document.getElementById("raiseBtn"),
         raiseInput: document.getElementById("raiseInput"),
         allInBtn: document.getElementById("allInBtn"),
-        newHandBtn: document.getElementById("newHandBtn"),
         soundBtn: document.getElementById("soundBtn"),
         fullscreenBtn: document.getElementById("fullscreenBtn"),
+        langBtn: document.getElementById("langBtn"),
+        langMenu: document.getElementById("langMenu"),
         quickRaiseButtons: document.querySelectorAll("[data-raise]"),
         startScreen: document.getElementById("startScreen"),
         startBtn: document.getElementById("startBtn"),
+        nextHandOverlay: document.getElementById("nextHandOverlay"),
+        nextHandBtn: document.getElementById("nextHandBtn"),
       };
 
       const audioState = {
@@ -914,7 +1247,7 @@
 
       function toggleSound() {
         audioState.enabled = !audioState.enabled;
-        ui.soundBtn.textContent = audioState.enabled ? "声音：开" : "声音：关";
+        ui.soundBtn.textContent = audioState.enabled ? t("soundOn") : t("soundOff");
         if (audioState.enabled) {
           unlockAudio();
         } else {
@@ -936,9 +1269,17 @@
 
       function updateFullscreenButton() {
         if (document.fullscreenElement) {
-          ui.fullscreenBtn.textContent = "退出全屏";
+          ui.fullscreenBtn.textContent = t("exitFullscreen");
         } else {
-          ui.fullscreenBtn.textContent = "全屏";
+          ui.fullscreenBtn.textContent = t("fullscreen");
+        }
+      }
+
+      function updateAllInButtonText() {
+        if (state.allInConfirm) {
+          ui.allInBtn.textContent = t("confirmAllIn");
+        } else {
+          ui.allInBtn.textContent = t("allIn");
         }
       }
 
@@ -948,6 +1289,14 @@
             console.log("Auto fullscreen failed:", err);
           });
         }
+      }
+
+      function toggleLanguageMenu() {
+        ui.langMenu.classList.toggle("hidden");
+      }
+
+      function hideLanguageMenu() {
+        ui.langMenu.classList.add("hidden");
       }
 
       function playSfx(name) {
@@ -968,7 +1317,7 @@
         state.players = [
           {
             id: "player",
-            name: "你",
+            name: t("you"),
             avatar: avatars.pop() || avatarPool[0],
             chips: startingChips,
             hand: [],
@@ -1034,7 +1383,7 @@
           ui.community.appendChild(hidden);
         }
 
-        ui.pot.textContent = `底池 ${state.pot}`;
+        ui.pot.textContent = `${t("pot")} ${state.pot}`;
 
         Object.values(ui.seats).forEach((seat) => {
           seat.innerHTML = "";
@@ -1057,7 +1406,7 @@
           const handLabel =
             player.isHuman && playerBest ? playerBest.label : "";
           const winnerBadge = isWinner
-            ? `<span class="winner-badge">Winner!</span>`
+            ? `<span class="winner-badge">${t("winner")}</span>`
             : "";
           info.innerHTML = `
             <div class="player-info">
@@ -1067,16 +1416,16 @@
               <div class="player-details">
                 <div class="player-top">
                   <div class="name">${player.name}</div>
-                  <div class="meta">筹码 <span class="chips">${player.chips}</span></div>
+                  <div class="meta">${t("chips")} <span class="chips">${player.chips}</span></div>
                 </div>
                 <div class="meta-row">
-                  <div class="meta">本轮下注 <span class="bet-amount">${player.betThisRound}</span></div>
+                  <div class="meta">${t("bet")} <span class="bet-amount">${player.betThisRound}</span></div>
                   <div class="action">${player.lastAction || ""}</div>
                 </div>
                 ${winnerBadge}
                 ${
                   handLabel
-                    ? `<div class="meta">最佳牌型 <span class="hand-rank">${handLabel}</span></div>`
+                    ? `<div class="meta">${t("bestHand")} <span class="hand-rank">${handLabel}</span></div>`
                     : ""
                 }
               </div>
@@ -1238,7 +1587,7 @@
         if (player.chips === 0) {
           player.allIn = true;
         }
-        player.lastAction = `盲注 ${paid}`;
+        player.lastAction = `${t("blind")} ${paid}`;
         return paid;
       }
 
@@ -1287,7 +1636,7 @@
         });
         dealHoleCards();
         render();
-        log(`新的牌局开始，庄家 ${state.players[dealer].name}`);
+        log(`${t("newHand")} ${state.players[dealer].name}`);
         startBettingRound(nextActiveIndex(bigIndex));
       }
 
@@ -1334,17 +1683,17 @@
           burnCard();
           dealCommunity(3);
           state.street = "flop";
-          log("翻牌");
+          log(t("flop"));
         } else if (state.street === "flop") {
           burnCard();
           dealCommunity(1);
           state.street = "turn";
-          log("转牌");
+          log(t("turn"));
         } else if (state.street === "turn") {
           burnCard();
           dealCommunity(1);
           state.street = "river";
-          log("河牌");
+          log(t("river"));
         } else if (state.street === "river") {
           state.street = "showdown";
           finishHand();
@@ -1361,7 +1710,7 @@
         const active = activePlayers();
         if (active.length === 1) {
           active[0].chips += state.pot;
-          log(`${active[0].name} 赢得底池 ${state.pot}`);
+          log(`${active[0].name} ${t("playerWins")} ${state.pot}`);
           state.lastWinners = [active[0].id];
           state.pot = 0;
         } else {
@@ -1370,7 +1719,8 @@
         render();
         checkGameOver();
         state.dealerIndex = nextActiveIndex(state.dealerIndex);
-        setStatus("本局结束");
+        setStatus(t("handEnded"));
+        ui.nextHandOverlay.classList.remove("hidden");
       }
 
       function distributePot() {
@@ -1391,7 +1741,7 @@
             }
           }
           log(
-            `${winners.map((p) => p.name).join(", ")} 赢得 ${pot.amount}`
+            `${winners.map((p) => p.name).join(", ")} ${t("playerWinsAmount")} ${pot.amount}`
           );
         });
         state.lastWinners = Array.from(winnersSet);
@@ -1433,14 +1783,14 @@
       async function startBettingRound(startIndex) {
         setStatus(
           state.street === "preflop"
-            ? "翻牌前下注"
+            ? t("preflopBetting")
             : state.street === "flop"
-            ? "翻牌下注"
+            ? t("flopBetting")
             : state.street === "turn"
-            ? "转牌下注"
+            ? t("turnBetting")
             : state.street === "river"
-            ? "河牌下注"
-            : "摊牌"
+            ? t("riverBetting")
+            : t("showdown")
         );
         let index = startIndex;
         while (!allActionsComplete()) {
@@ -1482,8 +1832,8 @@
         player.folded = true;
         player.inHand = false;
         player.needAction = false;
-        player.lastAction = "弃牌";
-        log("你弃牌");
+        player.lastAction = t("playerFolded");
+        log(`${t("you")} ${t("playerFolded")}`);
         playSfx("fold");
         endPlayerAction();
       }
@@ -1493,13 +1843,13 @@
         const callAmount = Math.max(0, state.currentBet - player.betThisRound);
         if (callAmount === 0) {
           player.needAction = false;
-          player.lastAction = "过牌";
-          log("你过牌");
+          player.lastAction = t("playerChecked");
+          log(`${t("you")} ${t("playerChecked")}`);
           playSfx("check");
         } else {
           const paid = bet(player, callAmount);
-          player.lastAction = paid < callAmount ? "全下跟注" : "跟注";
-          log(`你跟注 ${paid}`);
+          player.lastAction = paid < callAmount ? t("playerAllInCall") : t("playerCalled");
+          log(`${t("you")} ${t("playerCalled")} ${paid}`);
           playSfx("chip");
         }
         endPlayerAction();
@@ -1526,8 +1876,8 @@
         state.currentBet = raiseTo;
         state.minRaise = Math.max(state.minRaise, raiseSize);
         updateNeedActionOnRaise(player);
-        player.lastAction = player.allIn ? "全下" : "加注";
-        log(`你加注至 ${player.betThisRound}`);
+        player.lastAction = player.allIn ? t("playerAllIn") : t("playerRaised");
+        log(`${t("you")} ${t("playerRaised")} ${player.betThisRound}`);
         playSfx("chip");
         endPlayerAction();
       }
@@ -1542,11 +1892,11 @@
           state.minRaise = Math.max(state.minRaise, raiseSize);
           state.currentBet = raiseTo;
           updateNeedActionOnRaise(player);
-          log(`你全下至 ${raiseTo}`);
+          log(`${t("you")} ${t("playerAllIn")} ${raiseTo}`);
         } else {
-          log("你全下");
+          log(`${t("you")} ${t("playerAllIn")}`);
         }
-        player.lastAction = "全下";
+        player.lastAction = t("playerAllIn");
         playSfx("chip");
         endPlayerAction();
       }
@@ -1557,7 +1907,7 @@
         }
         if (!state.allInConfirm) {
           state.allInConfirm = true;
-          ui.allInBtn.textContent = "确认全下";
+          ui.allInBtn.textContent = t("confirmAllIn");
           if (allInConfirmTimeout) {
             clearTimeout(allInConfirmTimeout);
           }
@@ -1572,7 +1922,7 @@
 
       function resetAllInConfirm() {
         state.allInConfirm = false;
-        ui.allInBtn.textContent = "全下";
+        ui.allInBtn.textContent = t("allIn");
         if (allInConfirmTimeout) {
           clearTimeout(allInConfirmTimeout);
           allInConfirmTimeout = null;
@@ -1624,18 +1974,18 @@
               player.folded = true;
               player.inHand = false;
               player.needAction = false;
-              player.lastAction = "弃牌";
-              log(`${player.name} 弃牌`);
+              player.lastAction = t("playerFolded");
+              log(`${player.name} ${t("playerFolded")}`);
               playSfx("fold");
             } else if (action.type === "call") {
               const paid = bet(player, action.amount);
-              player.lastAction = paid < action.amount ? "全下跟注" : "跟注";
-              log(`${player.name} 跟注 ${paid}`);
+              player.lastAction = paid < action.amount ? t("playerAllInCall") : t("playerCalled");
+              log(`${player.name} ${t("playerCalled")} ${paid}`);
               playSfx("chip");
             } else if (action.type === "check") {
               player.needAction = false;
-              player.lastAction = "过牌";
-              log(`${player.name} 过牌`);
+              player.lastAction = t("playerChecked");
+              log(`${player.name} ${t("playerChecked")}`);
               playSfx("check");
             } else if (action.type === "raise") {
               const raiseAmount = action.raiseTo - player.betThisRound;
@@ -1644,8 +1994,8 @@
               state.minRaise = Math.max(state.minRaise, raiseSize);
               state.currentBet = action.raiseTo;
               updateNeedActionOnRaise(player);
-              player.lastAction = "加注";
-              log(`${player.name} 加注至 ${action.raiseTo}`);
+              player.lastAction = t("playerRaised");
+              log(`${player.name} ${t("playerRaised")} ${action.raiseTo}`);
               playSfx("chip");
             }
             render();
@@ -1864,23 +2214,23 @@
       function handRankLabel(rank) {
         switch (rank) {
           case 8:
-            return "同花顺";
+            return t("royalFlush");
           case 7:
-            return "四条";
+            return t("fourOfKind");
           case 6:
-            return "葫芦";
+            return t("fullHouse");
           case 5:
-            return "同花";
+            return t("flush");
           case 4:
-            return "顺子";
+            return t("straight");
           case 3:
-            return "三条";
+            return t("threeOfKind");
           case 2:
-            return "两对";
+            return t("twoPair");
           case 1:
-            return "一对";
+            return t("onePair");
           default:
-            return "高牌";
+            return t("highCard");
         }
       }
 
@@ -1904,11 +2254,11 @@
         const npcs = state.players.slice(1);
         if (player.chips <= 0) {
           state.gameOver = true;
-          setStatus("你输光筹码，游戏失败");
+          setStatus(t("gameOver"));
           playSfx("lose");
         } else if (npcs.every((npc) => npc.chips <= 0)) {
           state.gameOver = true;
-          setStatus("你赢得全部筹码，游戏胜利");
+          setStatus(t("gameWin"));
           playSfx("win");
         }
       }
@@ -1927,23 +2277,39 @@
       });
       ui.soundBtn.addEventListener("click", toggleSound);
       ui.fullscreenBtn.addEventListener("click", toggleFullscreen);
+      ui.langBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleLanguageMenu();
+      });
+      ui.langMenu.querySelectorAll("button").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const lang = btn.getAttribute("data-lang");
+          setLanguage(lang);
+          hideLanguageMenu();
+          state.players[0].name = t("you");
+          render();
+        });
+      });
       ui.startBtn.addEventListener("click", startGame);
-      ui.newHandBtn.addEventListener("click", () => {
-        if (state.waitingForPlayer) {
-          return;
-        }
+      ui.nextHandBtn.addEventListener("click", () => {
+        ui.nextHandOverlay.classList.add("hidden");
         if (!gameStarted) {
           return;
         }
         startHand();
       });
 
+      document.addEventListener("click", (e) => {
+        if (!ui.langMenu.contains(e.target) && e.target !== ui.langBtn) {
+          hideLanguageMenu();
+        }
+      });
       document.addEventListener("fullscreenchange", updateFullscreenButton);
       document.addEventListener("click", unlockAudio, { once: true });
 
       initPlayers();
       render();
-      setStatus("等待开始");
+      setStatus(t("waiting"));
     </script>
   </body>
 </html>
