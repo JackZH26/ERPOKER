@@ -458,79 +458,188 @@
         }
       }
       @media (orientation: landscape) and (max-height: 520px) {
+        body {
+          min-height: auto;
+        }
         .app {
-          padding: 10px;
-          gap: 8px;
+          padding: 6px;
+          gap: 6px;
+          min-height: auto;
+          max-height: 100vh;
+          overflow: hidden;
         }
         header {
-          gap: 8px;
+          gap: 6px;
+          padding: 4px 0;
         }
         h1 {
-          font-size: 16px;
+          font-size: 14px;
         }
         .status {
+          font-size: 10px;
+        }
+        .header-actions button {
           font-size: 11px;
+          padding: 4px 8px;
         }
         .game-layout {
-          grid-template-columns: 1.6fr 1fr;
+          grid-template-columns: 1.75fr 1fr;
           align-items: start;
+          gap: 8px;
+          overflow: hidden;
         }
         .table {
-          min-height: 240px;
-          padding: 10px;
+          min-height: 0;
+          height: calc(100vh - 80px);
+          max-height: 360px;
+          padding: 6px;
+          position: relative;
         }
         .table-center {
-          inset: 38% auto auto 50%;
+          inset: 45% auto auto 50%;
+          gap: 4px;
+        }
+        .community {
+          gap: 4px;
         }
         .seat {
-          width: min(180px, 48%);
+          width: min(150px, 44%);
         }
-        .seat-west,
+        .seat-north {
+          top: 6px;
+        }
+        .seat-south {
+          bottom: 6px;
+        }
+        .seat-west {
+          width: min(140px, 42%);
+          left: 6px;
+        }
         .seat-east {
-          width: min(170px, 46%);
+          width: min(140px, 42%);
+          right: 6px;
+        }
+        .card {
+          width: 34px;
+          height: 48px;
+          padding: 4px;
+          border-radius: 6px;
+        }
+        .card .card-label {
+          font-size: 9px;
+          padding: 0 2px;
+          border-radius: 4px;
+        }
+        .card .card-label.top {
+          top: 2px;
+          left: 2px;
+        }
+        .card .card-label.bottom {
+          bottom: 2px;
+          right: 2px;
         }
         .card.community-card {
-          width: 46px;
-          height: 64px;
+          width: 38px;
+          height: 54px;
         }
         .card.player-card {
+          width: 34px;
+          height: 48px;
+        }
+        .card.hero-card {
           width: 42px;
           height: 60px;
         }
-        .card.hero-card {
-          width: 50px;
-          height: 70px;
+        .player {
+          padding: 6px 8px;
+          gap: 6px;
+          border-radius: 8px;
+        }
+        .player .cards {
+          gap: 4px;
         }
         .controls {
-          padding: 10px;
-          gap: 8px;
+          padding: 8px;
+          gap: 6px;
         }
         .controls .buttons {
-          grid-template-columns: repeat(2, minmax(0, 1fr));
+          grid-template-columns: repeat(3, minmax(0, 1fr));
+          gap: 6px;
+        }
+        .controls .buttons button {
+          padding: 6px 8px;
+          font-size: 11px;
+          border-radius: 6px;
         }
         .quick-raises {
           grid-template-columns: repeat(4, minmax(0, 1fr));
+          gap: 4px;
+        }
+        .quick-raises button {
+          padding: 4px 6px;
+          font-size: 10px;
+        }
+        .raise-row {
+          gap: 6px;
+        }
+        .raise-row input {
+          padding: 5px 8px;
+          font-size: 11px;
+        }
+        .raise-row button {
+          padding: 6px 10px;
+          font-size: 11px;
+          white-space: nowrap;
         }
         .log {
-          height: 96px;
+          height: 70px;
+          padding: 6px;
+          font-size: 10px;
         }
         .pot {
-          font-size: 12px;
-          padding: 3px 6px;
+          font-size: 11px;
+          padding: 2px 6px;
+          top: 6px;
+          left: 6px;
         }
         .player-info {
           gap: 6px;
         }
         .avatar {
-          width: 34px;
-          height: 34px;
+          width: 28px;
+          height: 28px;
         }
         .player .name {
-          font-size: 12px;
-        }
-        .player .meta,
-        .player .action {
           font-size: 11px;
+        }
+        .player .chips {
+          font-size: 11px;
+        }
+        .player .meta {
+          font-size: 9px;
+        }
+        .player .action {
+          font-size: 9px;
+        }
+        .player .bet-amount,
+        .player .hand-rank {
+          font-size: 10px;
+        }
+        .winner-badge {
+          font-size: 9px;
+          padding: 1px 4px;
+        }
+        .player-details {
+          gap: 2px;
+        }
+        .meta-row {
+          gap: 6px;
+        }
+        .side-panel {
+          display: flex;
+          flex-direction: column;
+          gap: 6px;
+          max-height: calc(100vh - 80px);
         }
       }
     </style>
