@@ -52,6 +52,10 @@
         z-index: 1;
         text-align: center;
         padding: 24px;
+        display: flex;
+        flex-direction: column;
+        align-items: center;
+        gap: 16px;
       }
       .start-title {
         font-size: 32px;
@@ -65,6 +69,64 @@
         font-size: 18px;
         padding: 12px 24px;
         border-radius: 12px;
+        border: none;
+        cursor: pointer;
+        font-weight: 600;
+      }
+      .start-btn:hover {
+        background: #ffc94d;
+      }
+      .start-lang-dropdown {
+        position: relative;
+        margin-top: 8px;
+      }
+      .start-lang-btn {
+        background: rgba(23, 40, 46, 0.8);
+        color: var(--text);
+        border: 1px solid #2b3f47;
+        font-size: 14px;
+        padding: 8px 16px;
+        border-radius: 8px;
+        cursor: pointer;
+        transition: all 0.2s;
+      }
+      .start-lang-btn:hover {
+        background: rgba(31, 54, 64, 0.9);
+        border-color: var(--accent);
+      }
+      .start-lang-menu {
+        position: absolute;
+        top: 100%;
+        left: 50%;
+        transform: translateX(-50%);
+        margin-top: 8px;
+        background: var(--panel);
+        border: 1px solid #2b3f47;
+        border-radius: 8px;
+        padding: 4px;
+        min-width: 120px;
+        z-index: 1000;
+      }
+      .start-lang-menu.hidden {
+        display: none;
+      }
+      .start-lang-menu button {
+        width: 100%;
+        text-align: left;
+        padding: 8px 12px;
+        margin: 2px 0;
+        background: transparent;
+        border: none;
+        color: var(--text);
+        border-radius: 6px;
+        cursor: pointer;
+      }
+      .start-lang-menu button:hover {
+        background: #1f3640;
+      }
+      .start-lang-menu button.active {
+        background: var(--accent);
+        color: #0b1c1f;
       }
       .app {
         width: min(960px, 100%);
@@ -696,6 +758,15 @@
       <div class="start-content">
         <div class="start-title" data-i18n="gameTitle">Etheria Poker</div>
         <button id="startBtn" class="start-btn" data-i18n="startGame">开始游戏</button>
+        <div class="start-lang-dropdown">
+          <button id="startLangBtn" class="start-lang-btn">中文</button>
+          <div id="startLangMenu" class="start-lang-menu hidden">
+            <button data-lang="zh">中文</button>
+            <button data-lang="en">English</button>
+            <button data-lang="de">Deutsch</button>
+            <button data-lang="ja">日本語</button>
+          </div>
+        </div>
       </div>
     </div>
     <div class="app">
@@ -1010,6 +1081,32 @@
             : currentLang === "de"
             ? "Deutsch"
             : "日本語";
+        if (ui.startLangBtn) {
+          ui.startLangBtn.textContent =
+            currentLang === "zh"
+              ? "中文"
+              : currentLang === "en"
+              ? "English"
+              : currentLang === "de"
+              ? "Deutsch"
+              : "日本語";
+          // 更新启动页语言菜单的active状态
+          ui.startLangMenu.querySelectorAll("button").forEach((btn) => {
+            if (btn.getAttribute("data-lang") === currentLang) {
+              btn.classList.add("active");
+            } else {
+              btn.classList.remove("active");
+            }
+          });
+        }
+        // 更新主游戏界面语言菜单的active状态
+        ui.langMenu.querySelectorAll("button").forEach((btn) => {
+          if (btn.getAttribute("data-lang") === currentLang) {
+            btn.classList.add("active");
+          } else {
+            btn.classList.remove("active");
+          }
+        });
         updateAllInButtonText();
         render();
       }
@@ -1185,6 +1282,8 @@
         quickRaiseButtons: document.querySelectorAll("[data-raise]"),
         startScreen: document.getElementById("startScreen"),
         startBtn: document.getElementById("startBtn"),
+        startLangBtn: document.getElementById("startLangBtn"),
+        startLangMenu: document.getElementById("startLangMenu"),
         nextHandBtnLarge: document.getElementById("nextHandBtnLarge"),
         actionButtons: document.getElementById("actionButtons"),
       };
@@ -1278,6 +1377,14 @@
 
       function hideLanguageMenu() {
         ui.langMenu.classList.add("hidden");
+      }
+
+      function toggleStartLanguageMenu() {
+        ui.startLangMenu.classList.toggle("hidden");
+      }
+
+      function hideStartLanguageMenu() {
+        ui.startLangMenu.classList.add("hidden");
       }
 
       function playSfx(name) {
@@ -2282,6 +2389,17 @@
         });
       });
       ui.startBtn.addEventListener("click", startGame);
+      ui.startLangBtn.addEventListener("click", (e) => {
+        e.stopPropagation();
+        toggleStartLanguageMenu();
+      });
+      ui.startLangMenu.querySelectorAll("button").forEach((btn) => {
+        btn.addEventListener("click", () => {
+          const lang = btn.getAttribute("data-lang");
+          setLanguage(lang);
+          hideStartLanguageMenu();
+        });
+      });
       ui.nextHandBtnLarge.addEventListener("click", () => {
         hideNextHandButton();
         if (!gameStarted || state.gameOver) {
@@ -2294,11 +2412,19 @@
         if (!ui.langMenu.contains(e.target) && e.target !== ui.langBtn) {
           hideLanguageMenu();
         }
+        if (
+          ui.startLangMenu &&
+          !ui.startLangMenu.contains(e.target) &&
+          e.target !== ui.startLangBtn
+        ) {
+          hideStartLanguageMenu();
+        }
       });
       document.addEventListener("fullscreenchange", updateFullscreenButton);
       document.addEventListener("click", unlockAudio, { once: true });
 
       initPlayers();
+      updateAllTranslations();
       render();
       setStatus(t("waiting"));
     </script>
